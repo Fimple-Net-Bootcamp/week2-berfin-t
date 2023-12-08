@@ -49,3 +49,29 @@ REST API tasarımında "best practice" (en iyi uygulama) prensipleri, kullanıc�
 ### 6. Sürüm Yönetimi
 
 - API'nizin sürümünü yönetin. URL'de veya HTTP başlıklarında sürüm bilgisini belirtin. Örneğin, `/api/v1/users`.
+
+## Benim API'm
+<img src="ss/api.png" width=50% />
+<img src="ss/space-weather.png" width=50% />
+
+#### POST
+<img src="ss/post.png" width=50% />
+
+#### GET
+<img src="ss/Getall.png" width=50% />
+<img src="ss/getbyid.png" width=50% />
+
+#### PUT
+<img src="ss/put.png" width=50% />
+<img src="ss/put2.png" width=50% />
+
+#### PATCH
+<img src="ss/patch.png" width=50% />
+<img src="ss/patch2.png" width=50% />
+
+#### DELETE
+<img src="ss/delete.png" width=50% />
+<img src="ss/delete2.png" width=50% />
+
+#### Sıralama
+<img src="ss/sorting.png" width=50% />
