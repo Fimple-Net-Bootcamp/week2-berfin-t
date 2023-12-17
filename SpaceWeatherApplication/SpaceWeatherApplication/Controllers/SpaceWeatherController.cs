@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.JsonPatch;
+using SpaceWeatherApplication.Services;
+using SpaceWeatherApplication.Entities;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.JsonPatch;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SpaceWeatherApplication.Controllers
 {
@@ -8,116 +12,79 @@ namespace SpaceWeatherApplication.Controllers
     [Route("api/v1/space-weather")]
     public class SpaceWeatherController : ControllerBase
     {
-        private static List<SpaceWeather> spaceWeatherList = new List<SpaceWeather>();
-        private static int idCounter = 1;
+        private readonly SpaceWeatherService _spaceWeatherService;
+
+        public SpaceWeatherController(SpaceWeatherService spaceWeatherService)
+        {
+            _spaceWeatherService = spaceWeatherService;
+        }
 
         [HttpPost]
         public IActionResult Create(SpaceWeather spaceWeather)
         {
-            spaceWeather.Id = idCounter++;
-            spaceWeatherList.Add(spaceWeather);
-            // 201 Created for a successful POST operation
-            return CreatedAtAction(nameof(GetById), new { id = spaceWeather.Id }, spaceWeather);
+            var createdSpaceWeather = _spaceWeatherService.Create(spaceWeather);
+            return CreatedAtAction(nameof(GetById), new { id = createdSpaceWeather.Id }, createdSpaceWeather);
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            // 200 OK for a successful GET operation
+            var spaceWeatherList = _spaceWeatherService.GetAll();
             return Ok(spaceWeatherList);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}")] 
         public IActionResult GetById(int id)
         {
-            var spaceWeather = spaceWeatherList.Find(sw => sw.Id == id);
+            var spaceWeather = _spaceWeatherService.GetById(id);
             if (spaceWeather == null)
             {
-                // 404 Not Found if the resource is not found
                 return NotFound();
             }
-            // 200 OK for a successful GET operation
             return Ok(spaceWeather);
         }
 
-
-        [HttpGet("{id}/planetDataList")]
-        public IActionResult GetByPlanetDataList(int id, [FromQuery] string? sortOrder = null)
+        [HttpGet("{id}/planetDataList")] 
+        public IActionResult GetPlanetDataList(int id, [FromQuery] string? sortOrder = null)
         {
-            var spaceWeather = spaceWeatherList.Find(sw => sw.Id == id);
-            if (spaceWeather == null)
+            var planetDataList = _spaceWeatherService.GetPlanetDataList(id, sortOrder);
+            if (planetDataList == null)
             {
-                // 404 Not Found if the resource is not found
                 return NotFound();
             }
-            switch (sortOrder)
-            {
-                case "desc":
-                    return Ok(spaceWeather.PlanetDataList.OrderByDescending(i => i.PlanetName));
-                case "asc":
-                    return Ok(spaceWeather.PlanetDataList.OrderBy(i => i.PlanetName));
-                default:
-                    return Ok(spaceWeather.PlanetDataList);
-            }
+            return Ok(planetDataList);
         }
 
-        // PUT: Used to update an existing resource. Usually used to update the full resource.
         [HttpPut("{id}")]
         public IActionResult Update(int id, SpaceWeather updatedSpaceWeather)
         {
-            var spaceWeather = spaceWeatherList.Find(sw => sw.Id == id);
-            if (spaceWeather == null)
+            var success = _spaceWeatherService.Update(id, updatedSpaceWeather);
+            if (!success)
             {
-                // 404 Not Found if the resource is not found
                 return NotFound();
             }
-
-            spaceWeather.Date = updatedSpaceWeather.Date;
-            spaceWeather.PlanetDataList = updatedSpaceWeather.PlanetDataList;
-
-            // 204 No Content for a successful PUT operation with no response body
             return NoContent();
         }
 
         [HttpPatch("{id}")]
         public IActionResult PartialUpdateSpaceWeather(int id, JsonPatchDocument<SpaceWeather> patch)
         {
-            var spaceWeather = spaceWeatherList.Find(sw => sw.Id == id);
-            if (spaceWeather == null)
+            var success = _spaceWeatherService.PartialUpdateSpaceWeather(id, patch);
+            if (!success)
             {
-                // 404 Not Found if the resource is not found
                 return NotFound();
             }
-
-            // Partial update operations by applying JsonPatchDocument
-            try
-            {
-                patch.ApplyTo(spaceWeather);
-            }
-            catch (JsonPatchException ex)
-            {
-                // Handle any potential errors here
-                ModelState.AddModelError("JsonPatch", ex.Message);
-                // 400 Bad Request for a client error (e.g., invalid JSON Patch format)
-                return BadRequest(ModelState);
-            }
-            // 204 No Content for a successful PATCH operation with no response body
             return NoContent();
         }
-
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var spaceWeather = spaceWeatherList.Find(sw => sw.Id == id);
-            if (spaceWeather == null)
+            var success = _spaceWeatherService.Delete(id);
+            if (!success)
             {
-                // 404 Not Found if the resource is not found
                 return NotFound();
             }
-
-            spaceWeatherList.Remove(spaceWeather);
-            // 204 No Content for a successful DELETE operation with no response body
             return NoContent();
         }
     }
